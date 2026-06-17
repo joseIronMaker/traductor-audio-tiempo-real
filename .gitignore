@@ -1,0 +1,21 @@
+# Secretos: NUNCA subir la clave
+.env
+
+# Entorno virtual
+.venv/
+venv/
+
+# Audios generados / pruebas
+*.wav
+
+# Logs
+*.log
+
+# Config local de Claude Code
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
