@@ -11,7 +11,9 @@ Recuerda enrutar la fuente (navegador/Zoom) a "CABLE Input" para no oír el
 audio original; la app captura de "CABLE Output".
 """
 
+import os
 import queue
+import sys
 import tkinter as tk
 from tkinter import ttk, messagebox
 
@@ -368,8 +370,21 @@ class App:
         self.txt.configure(state="disabled")
 
 
+def _resolver_icono():
+    """Ruta de icon.ico, tanto como script como empaquetado (PyInstaller)."""
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    p = os.path.join(base, "icon.ico")
+    return p if os.path.exists(p) else None
+
+
 def main():
     root = tk.Tk()
+    ico = _resolver_icono()
+    if ico:
+        try:
+            root.iconbitmap(ico)
+        except Exception:
+            pass
     App(root)
     root.mainloop()
 
