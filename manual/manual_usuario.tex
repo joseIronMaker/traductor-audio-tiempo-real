@@ -1,0 +1,303 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true,linkcolor=azul,urlcolor=azul,citecolor=azul]{hyperref}
+
+% ---- Colores ----
+\definecolor{azul}{HTML}{1d4ed8}
+\definecolor{indigo}{HTML}{4f46e5}
+\definecolor{gris}{HTML}{f3f4f6}
+\definecolor{gristxt}{HTML}{4b5563}
+
+% ---- Encabezados ----
+\titleformat{\section}{\Large\bfseries\color{indigo}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{azul}}{\thesubsection}{0.5em}{}
+
+% ---- Pie de página ----
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\small\color{gristxt}Traductor de audio en tiempo real}
+\fancyfoot[R]{\small\color{gristxt}\thepage}
+
+% ---- Estilo de bloques de código ----
+\lstdefinestyle{cmd}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gris},
+  frame=tb,
+  framesep=5pt,
+  framerule=0pt,
+  aboveskip=8pt, belowskip=8pt,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+}
+\lstset{style=cmd}
+
+% Columna tipo X centrada y X angosta para tablas
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\hypersetup{pdftitle={Manual de usuario - Traductor de audio en tiempo real}}
+
+\begin{document}
+
+% ======== PORTADA ========
+\begin{center}
+  {\color{indigo}\rule{\textwidth}{2pt}}\\[1.2em]
+  {\Huge\bfseries Traductor de audio en tiempo real}\\[0.6em]
+  {\Large\color{gristxt} Manual de usuario}\\[1em]
+  {\large Traduce lo que suena en tu PC a otro idioma, en vivo,\\
+   con \textbf{Gemini 3.5 Live Translate}}\\[1em]
+  {\color{indigo}\rule{\textwidth}{2pt}}
+\end{center}
+
+\vspace{1em}
+\noindent\textit{Ejemplo: un curso de Udemy en inglés lo escuchas en español
+mientras lo ves, con subtítulos en pantalla.}
+
+\vspace{1.5em}
+\tableofcontents
+\vspace{1em}
+\hrule
+\vspace{1em}
+
+% ======== 1. REQUISITOS ========
+\section{¿Qué necesito? (requisitos)}
+
+\begin{tabularx}{\textwidth}{@{}l Y l@{}}
+\toprule
+\textbf{Necesitas} & \textbf{Para qué} & \textbf{Costo} \\
+\midrule
+Windows 10 u 11 & Sistema operativo & --- \\
+Python 3.10 o superior & Ejecutar el programa & Gratis \\
+VB-CABLE & Cable de audio virtual para capturar el sonido & Gratis \\
+Clave de Gemini (API key) & Conectar con el traductor de Google & Gratis (tier de prueba) \\
+Audífonos o bocinas & Escuchar la traducción & --- \\
+Internet & La traducción ocurre en la nube & --- \\
+\bottomrule
+\end{tabularx}
+
+% ======== 2. INSTALACIÓN ========
+\section{Instalación paso a paso}
+
+\subsection{Instalar Python}
+\begin{enumerate}[leftmargin=*]
+  \item Descarga Python desde \url{https://www.python.org/downloads/}
+  \item Ejecuta el instalador y \textbf{marca la casilla ``Add Python to PATH''} (importante).
+  \item Clic en \textbf{Install Now}.
+\end{enumerate}
+Para verificar, abre \textbf{PowerShell} y escribe:
+\begin{lstlisting}
+python --version
+\end{lstlisting}
+Debe mostrar algo como \texttt{Python 3.12.x}.
+
+\subsection{Instalar VB-CABLE (el cable de audio)}
+\begin{enumerate}[leftmargin=*]
+  \item Ve a \url{https://vb-audio.com/Cable} y descarga el paquete.
+  \item Descomprime el ZIP.
+  \item \textbf{Clic derecho} en \texttt{VBCABLE\_Setup\_x64.exe} $\rightarrow$ \textbf{Ejecutar como administrador}.
+  \item Clic en \textbf{Install Driver} y \textbf{reinicia} la computadora.
+\end{enumerate}
+Esto agrega dos dispositivos: \textbf{CABLE Input} (entrada) y \textbf{CABLE Output}
+(salida). Es seguro y se desinstala con el mismo instalador (\textit{Remove Driver}).
+
+\subsection{Descargar el programa}
+\textbf{Opción fácil (sin Git):} entra al repositorio, botón verde \textbf{Code}
+$\rightarrow$ \textbf{Download ZIP} y descomprime donde quieras.
+
+\noindent\textbf{Opción con Git:}
+\begin{lstlisting}
+git clone https://github.com/joseIronMaker/traductor-audio-tiempo-real.git
+\end{lstlisting}
+
+\subsection{Instalar las dependencias}
+Abre \textbf{PowerShell dentro de la carpeta del programa} (clic derecho en la
+carpeta $\rightarrow$ \textit{Abrir en Terminal}) y ejecuta:
+\begin{lstlisting}
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+\end{lstlisting}
+Si al activar sale un error de ``ejecución de scripts deshabilitada'', corre esto
+una vez y vuelve a intentar:
+\begin{lstlisting}
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+\end{lstlisting}
+
+\subsection{Conseguir tu clave de Gemini}
+\begin{enumerate}[leftmargin=*]
+  \item Entra a \url{https://aistudio.google.com/apikey} (inicia sesión con Google).
+  \item Clic en \textbf{Create API key} y \textbf{copia} la clave.
+  \item Copia el archivo \texttt{.env.example} y renómbralo a \texttt{.env}:
+  \begin{lstlisting}
+copy .env.example .env
+  \end{lstlisting}
+  \item Abre \texttt{.env} con el Bloc de notas y pega tu clave:
+  \begin{lstlisting}
+GEMINI_API_KEY=pega_aqui_tu_clave
+  \end{lstlisting}
+  \item Guarda. \textbf{Nunca compartas este archivo} (contiene tu clave).
+\end{enumerate}
+
+\subsection{Probar que todo conecta}
+\begin{lstlisting}
+python hola_mundo.py
+\end{lstlisting}
+Si dice \textbf{``Conexión con la Live API establecida''}, todo quedó listo.
+
+% ======== 3. AUDIO ========
+\section{Configurar el audio (lo más importante)}
+
+El truco es mandar \textbf{el sonido que quieres traducir} al cable
+(CABLE Input). El programa lo captura de \textbf{CABLE Output}, lo traduce, y
+reproduce el resultado en tus audífonos.
+
+\begin{lstlisting}
+Fuente (curso/reunion) -> CABLE Input -> [cable] -> CABLE Output -> el programa
+                                                                       |
+                                                                    traduce
+                                                                       v
+            oyes la traduccion  <-  tus audifonos/bocinas  <----------
+\end{lstlisting}
+
+\noindent\textbf{Regla de oro:} la \textbf{fuente} va a \textit{CABLE Input};
+tú \textbf{escuchas} por tus audífonos. La ``Salida de audio'' del programa
+\textbf{nunca} debe ser un cable.
+
+\subsection{Cómo enrutar según lo que uses}
+\textbf{A) Un navegador (YouTube, Udemy, Coursera):}
+\begin{enumerate}[leftmargin=*,nosep]
+  \item Clic derecho en el ícono de volumen (barra de tareas) $\rightarrow$ \textbf{Mezclador de volumen}.
+  \item Busca tu navegador $\rightarrow$ \textbf{Dispositivo de salida} = \textbf{CABLE Input}.
+\end{enumerate}
+
+\textbf{B) Zoom:}
+\begin{enumerate}[leftmargin=*,nosep]
+  \item En Zoom, flecha junto al micrófono $\rightarrow$ \textbf{Seleccionar un altavoz}.
+  \item Elige \textbf{CABLE Input (VB-Audio Virtual Cable)}.
+\end{enumerate}
+
+\textbf{C) Todo el sistema:}
+\begin{enumerate}[leftmargin=*,nosep]
+  \item Clic derecho en volumen $\rightarrow$ \textbf{Configuración de sonido}.
+  \item En \textbf{Salida}, elige \textbf{CABLE Input} como predeterminado.
+  (Recuerda regresarlo a tus audífonos al terminar.)
+\end{enumerate}
+
+% ======== 4. USO ========
+\section{Usar la aplicación}
+
+Con el entorno activado, abre la app:
+\begin{lstlisting}
+python app.py
+\end{lstlisting}
+
+Configura la ventana así:
+
+\begin{tabularx}{\textwidth}{@{}l Y@{}}
+\toprule
+\textbf{Campo} & \textbf{Qué poner} \\
+\midrule
+Idioma origen & Déjalo en \texttt{Auto-detectar} (el modelo lo detecta solo). \\
+Idioma destino & El idioma al que quieres traducir (ej. \texttt{Español}). \\
+Salida de audio & Tus audífonos o bocinas (donde escuchas). \\
+Capturar de & \texttt{CABLE Output (VB-Audio Virtual Cable)} (por defecto). \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.8em}
+\noindent\textbf{Botones:}
+\begin{itemize}[leftmargin=*,nosep]
+  \item \textbf{Iniciar} --- empieza a traducir (estado \textit{Traduciendo}, en verde).
+  \item \textbf{Pausar / Reanudar} --- detiene/continúa (ahorra costo en pausa).
+  \item \textbf{Detener} --- termina la sesión.
+  \item \textbf{Limpiar} --- borra los subtítulos en pantalla.
+  \item \textbf{Mostrar inglés} --- muestra también el texto del idioma original.
+\end{itemize}
+
+\vspace{0.5em}
+\noindent\textbf{Cambiar de idioma en vivo:} mientras corre, solo cambia el menú
+\textbf{Idioma destino} y en un par de segundos se adapta solo, sin reiniciar.
+
+Cuando pongas a sonar la fuente, en unos segundos verás los subtítulos avanzar y
+oirás la traducción.
+
+% ======== 5. CASOS DE USO ========
+\section{Casos de uso}
+
+\begin{tabularx}{\textwidth}{@{}l Y@{}}
+\toprule
+\textbf{Quiero traducir...} & \textbf{Pasos} \\
+\midrule
+Un video de YouTube & Rutea el navegador a CABLE Input, destino = tu idioma, Iniciar. \\
+Un curso de Udemy/Coursera & Igual que YouTube (es el navegador). \\
+Una reunión de Zoom & Zoom: Speaker = CABLE Input, Iniciar. \\
+Cualquier cosa del sistema & Salida predeterminada = CABLE Input. \\
+\bottomrule
+\end{tabularx}
+
+% ======== 6. PROBLEMAS ========
+\section{Problemas comunes y soluciones}
+
+\begin{tabularx}{\textwidth}{@{}l Y Y@{}}
+\toprule
+\textbf{Síntoma} & \textbf{Causa probable} & \textbf{Solución} \\
+\midrule
+Error \texttt{-9999} al Iniciar & Dispositivo WASAPI/WDM-KS conflictivo (USB) & La app usa MME; elige otra Salida (ej. Speakers). No uses dispositivos ``WDM-KS''. \\
+\addlinespace
+Error \texttt{-9985} (Device unavailable) & Otra app (ej. Zoom) tiene tomado el dispositivo & Usa otra salida o cierra/redirige la otra app. \\
+\addlinespace
+La traducción se repite o se atora & Hay un eco en el ruteo & \texttt{Win+R} $\rightarrow$ \texttt{mmsys.cpl} $\rightarrow$ Grabar $\rightarrow$ CABLE Output $\rightarrow$ Escuchar $\rightarrow$ desmarca ``Escuchar este dispositivo''. \\
+\addlinespace
+No escucho la traducción & La salida está en un cable o en un dispositivo que no usas & Pon Salida de audio = tus audífonos/bocinas reales. \\
+\addlinespace
+No aparecen subtítulos & La fuente no llega al cable & Revisa que enrutaste el navegador/Zoom a CABLE Input. \\
+\addlinespace
+``Falta GEMINI\_API\_KEY'' & No creaste el \texttt{.env} o está vacío & Repite la sección 2.5. \\
+\addlinespace
+Va con retraso de unos segundos & Normal & Es la latencia del modelo en vivo; en clases grabadas no afecta. \\
+\bottomrule
+\end{tabularx}
+
+% ======== 7. FAQ ========
+\section{Preguntas frecuentes}
+
+\begin{description}[leftmargin=0pt,style=nextline]
+  \item[¿Es gratis?] El programa sí. Gemini tiene un tier gratuito para probar;
+  en plan de pago cuesta aprox. \$0.037 USD por minuto de audio (aprox.
+  \$2.2/hora). Pausar cuando no necesitas traducir ahorra mucho.
+  \item[¿Oiré también el audio original?] No: el original se va ``por dentro''
+  al cable y solo oyes la traducción (así no se encima).
+  \item[¿A qué idiomas traduce?] A más de 70. El menú incluye español, inglés,
+  francés, alemán, portugués, italiano, japonés, coreano, chino, ruso, árabe e hindi.
+  \item[¿Detecta solo el idioma original?] Sí, automáticamente. Por eso
+  ``Idioma origen'' es solo informativo.
+  \item[¿Funciona en Mac o Linux?] El código de Gemini sí, pero la captura está
+  pensada para Windows (VB-CABLE). En Mac se usa BlackHole y en Linux el monitor
+  de PulseAudio.
+  \item[¿Es seguro VB-CABLE?] Sí, es software conocido de VB-Audio. Descárgalo
+  solo del sitio oficial \texttt{vb-audio.com}.
+\end{description}
+
+\vspace{1em}
+\hrule
+\vspace{0.6em}
+\noindent\small\color{gristxt} Repositorio:
+\url{https://github.com/joseIronMaker/traductor-audio-tiempo-real}
+
+\end{document}
