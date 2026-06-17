@@ -4,6 +4,9 @@ Captura el audio que suena en tu PC (un curso en inglés) y reproduce una
 traducción hablada al español casi en tiempo real, usando el modelo
 `gemini-3.5-live-translate-preview`.
 
+> 📖 **¿Primera vez? Lee el [Manual de usuario](MANUAL.md)** — instalación paso a
+> paso, configuración del audio y solución de problemas, explicado desde cero.
+
 ## Estado del proyecto
 
 - [x] **Fase 0** — Entorno + conexión a la API (`hola_mundo.py`).
