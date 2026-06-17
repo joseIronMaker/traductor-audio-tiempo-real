@@ -108,11 +108,12 @@ def build_live_config(target_language=None, echo=None):
 
 
 def get_client():
-    api_key = os.environ.get("GEMINI_API_KEY")
+    from apikey import load_api_key
+    api_key = load_api_key()
     if not api_key:
         raise RuntimeError(
-            "Falta GEMINI_API_KEY. Copia .env.example a .env y pega tu clave "
-            "(https://aistudio.google.com/apikey)."
+            "Falta GEMINI_API_KEY. Configúrala en la app o copia .env.example a "
+            ".env y pega tu clave (https://aistudio.google.com/apikey)."
         )
     return genai.Client(api_key=api_key)
 

@@ -13,10 +13,11 @@ audio original; la app captura de "CABLE Output".
 
 import queue
 import tkinter as tk
-from tkinter import ttk, font as tkfont
+from tkinter import ttk, messagebox
 
 import sounddevice as sd
 
+import apikey
 import config
 from engine import TranslatorEngine
 
@@ -95,6 +96,7 @@ class App:
         self._init_style()
         self._build_widgets()
         self._poll_queue()
+        self.root.after(250, self._verificar_clave)
 
     # ---- Estilo ---------------------------------------------------------- #
     def _init_style(self):
@@ -195,6 +197,9 @@ class App:
         tk.Button(ctr, text="🧹 Limpiar", command=self._limpiar, relief="flat",
                   bd=0, bg=BG, fg=MUTED, activebackground=BG, cursor="hand2",
                   font=("Segoe UI", 9)).pack(side="right", padx=6)
+        tk.Button(ctr, text="🔑 Clave API", command=lambda: self._pedir_clave(),
+                  relief="flat", bd=0, bg=BG, fg=MUTED, activebackground=BG,
+                  cursor="hand2", font=("Segoe UI", 9)).pack(side="right", padx=6)
 
         # Estado
         est = tk.Frame(self.root, bg=BG)
@@ -261,6 +266,56 @@ class App:
         self.txt.configure(state="normal")
         self.txt.delete("1.0", "end")
         self.txt.configure(state="disabled")
+
+    def _verificar_clave(self):
+        if not apikey.load_api_key():
+            self._pedir_clave(primera=True)
+
+    def _pedir_clave(self, primera=False):
+        """Ventana modal para introducir y guardar la clave de Gemini."""
+        win = tk.Toplevel(self.root)
+        win.title("Clave de Gemini")
+        win.configure(bg=CARD)
+        win.transient(self.root)
+        win.grab_set()
+        win.resizable(False, False)
+
+        tk.Label(win, text="🔑  Clave de la API de Gemini", bg=CARD, fg=INK,
+                 font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=16, pady=(14, 2))
+        msg = ("Necesitas una clave (gratis) de Google AI Studio.\n"
+               "Se guarda solo en tu equipo." if primera
+               else "Pega tu clave de Gemini. Se guarda solo en tu equipo.")
+        tk.Label(win, text=msg, bg=CARD, fg=MUTED, justify="left",
+                 font=("Segoe UI", 9)).pack(anchor="w", padx=16)
+
+        entry = tk.Entry(win, width=48, show="•", font=("Segoe UI", 10))
+        entry.pack(padx=16, pady=10)
+        actual = apikey.load_api_key()
+        if actual:
+            entry.insert(0, actual)
+
+        link = tk.Label(win, text="Conseguir clave: aistudio.google.com/apikey",
+                        bg=CARD, fg=ES_COLOR, cursor="hand2", font=("Segoe UI", 9))
+        link.pack(anchor="w", padx=16)
+        link.bind("<Button-1>", lambda e: __import__("webbrowser").open(
+            "https://aistudio.google.com/apikey"))
+
+        def guardar():
+            k = entry.get().strip()
+            if not k:
+                messagebox.showwarning("Clave vacía", "Pega una clave válida.",
+                                       parent=win)
+                return
+            apikey.save_api_key(k)
+            win.destroy()
+
+        botones = tk.Frame(win, bg=CARD)
+        botones.pack(fill="x", padx=16, pady=(6, 14))
+        self._boton(botones, "Guardar", GREEN, GREEN_DK, guardar).pack(side="right")
+        tk.Button(botones, text="Cancelar", command=win.destroy, relief="flat",
+                  bd=0, bg=CARD, fg=MUTED, cursor="hand2",
+                  font=("Segoe UI", 10)).pack(side="right", padx=8)
+        entry.focus_set()
 
     def _set_corriendo(self, corriendo):
         estado = "disabled" if corriendo else "readonly"
